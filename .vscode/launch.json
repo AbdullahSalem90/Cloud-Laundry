@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "laundry_flow",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/core/main.dart"
+        },
+        {
+            "name": "laundry_flow (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/core/main.dart"
+        },
+        {
+            "name": "laundry_flow (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/core/main.dart"
+        }
+    ]
+}
