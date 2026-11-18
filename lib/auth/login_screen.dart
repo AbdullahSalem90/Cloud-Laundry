@@ -1,13 +1,9 @@
-// مسار الملف: lib/login_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:laundry_flow/admin/dashboard_screen.dart';
 
-import 'core/app_data.dart';
-import 'core/main.dart';
-import 'customer/customer_home_screen.dart';
-
-// مسار شاشتك الأصلية
+import '../core/app_data.dart';
+import '../core/app_constants.dart';
+import '../customer/customer_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,13 +14,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _nameController =
-      TextEditingController(); // لصفحة إنشاء الحساب
-  bool _isSignUp = false; // للتبديل بين تسجيل الدخول وإنشاء حساب
 
   void _submit() {
     final phone = _phoneController.text.trim();
-    final name = _nameController.text.trim();
 
     if (phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -41,25 +33,30 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // 🌟 حساب تجريبي خاص بالأدمن (مثلاً هذا الرقم يدخل مباشرة للوحة التحكم)
-    if (phone == '0777' && !_isSignUp) {
+    // دخول المدير
+    if (phone == '0777') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => DashboardScreen(onToggleLanguage: () {}),
-        ), // ⬅️ التوجيه لشاشتك الأصلية
+        ),
       );
       return;
     }
 
-    // تسجيل دخول أو إنشاء حساب للعميل العادي
-    if (_isSignUp && name.isEmpty) {
+    // التحقق من رقم العميل
+    final isAllowedCustomer =
+        phone == '0555' ||
+        AppData.customers.any((customer) => customer.phone.trim() == phone);
+
+    // رفض الأرقام غير المسجلة
+    if (!isAllowedCustomer) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             AppStrings.get(
-              'الرجاء إدخال الاسم الكريم',
-              'Please enter your name',
+              'رقم الجوال غير مسجل، يرجى مراجعة الإدارة',
+              'Phone number is not registered',
             ),
           ),
           backgroundColor: Colors.redAccent,
@@ -68,18 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // إضافة العميل لقائمة العملاء لو كان تسجيل جديد
-    if (_isSignUp) {
-      AppData.customers.add(
-        Customer(
-          id: 'C${AppData.customers.length + 1}',
-          name: name,
-          phone: phone,
-        ),
-      );
-    }
-
-    // الانتقال لشاشة العميل الرئيسية
+    // دخول العميل
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const CustomerHomeScreen()),
@@ -111,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
+
                 const Text(
                   'LaundryFlow',
                   style: TextStyle(
@@ -121,6 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
+
                 Text(
                   AppStrings.get(
                     'المغسلة السحابية الذكية ☁️',
@@ -130,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 48),
 
-                // كارد الأداة (تسجيل الدخول / إنشاء حساب)
+                // كارد تسجيل الدخول
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -148,12 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _isSignUp
-                            ? AppStrings.get(
-                                'إنشاء حساب جديد',
-                                'Create Account',
-                              )
-                            : AppStrings.get('تسجيل الدخول', 'Sign In'),
+                        AppStrings.get('تسجيل الدخول', 'Sign In'),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -161,41 +144,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
+
                       Text(
-                        _isSignUp
-                            ? AppStrings.get(
-                                'أدخل بياناتك لنبدأ خدمة غسيل ملابسك',
-                                'Enter your details to start laundry service',
-                              )
-                            : AppStrings.get(
-                                'أدخل رقم الجوال للمتابعة',
-                                'Enter mobile number to continue',
-                              ),
+                        AppStrings.get(
+                          'أدخل رقم الجوال للمتابعة',
+                          'Enter mobile number to continue',
+                        ),
                         style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textMuted,
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      // حقل الاسم (يظهر فقط في إنشاء الحساب)
-                      if (_isSignUp) ...[
-                        TextField(
-                          controller: _nameController,
-                          style: TextStyle(color: AppColors.textDark),
-                          decoration: InputDecoration(
-                            labelText: AppStrings.get(
-                              'الاسم الكريم',
-                              'Full Name',
-                            ),
-                            prefixIcon: const Icon(Icons.person_outline),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
 
                       // حقل رقم الجوال
                       TextField(
@@ -216,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // زر التنفيذ
+                      // زر الدخول
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -230,9 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           child: Text(
-                            _isSignUp
-                                ? AppStrings.get('إنشاء الحساب', 'Sign Up')
-                                : AppStrings.get('دخول', 'Login'),
+                            AppStrings.get('دخول', 'Login'),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -244,37 +202,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // زر التبديل بين تسجيل الدخول وإنشاء حساب
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _isSignUp = !_isSignUp;
-                    });
-                  },
-                  child: Text(
-                    _isSignUp
-                        ? AppStrings.get(
-                            'لديك حساب بالفعل؟ تسجيل الدخول',
-                            'Already have an account? Sign In',
-                          )
-                        : AppStrings.get(
-                            'ليس لديك حساب؟ إنشاء حساب جديد',
-                            'Don\'t have an account? Sign Up',
-                          ),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-                // تلميح تجريبي للأدمن
-                Text(
-                  AppStrings.get('💡 ', '💡 '),
-                  style: TextStyle(fontSize: 11, color: Colors.amber.shade300),
-                ),
               ],
             ),
           ),

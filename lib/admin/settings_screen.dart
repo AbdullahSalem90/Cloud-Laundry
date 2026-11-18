@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../core/main.dart';
+import '../core/app_constants.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

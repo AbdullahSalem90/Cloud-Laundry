@@ -1,10 +1,7 @@
-// مسار الملف: lib/add_order_screen.dart
-
 import 'package:flutter/material.dart';
 
 import '../core/app_data.dart';
-import '../core/main.dart';
-
+import '../core/app_constants.dart';
 class AddOrderScreen extends StatefulWidget {
   const AddOrderScreen({super.key});
 
@@ -13,10 +10,30 @@ class AddOrderScreen extends StatefulWidget {
 }
 
 class _AddOrderScreenState extends State<AddOrderScreen> {
+  // العميل الذي اختاره المدير للطلب.
   Customer? _selectedCustomer;
-  LaundryServiceItem? _selectedService;
-  int _quantity = 1;
 
+  // المفتاح هو رقم الخدمة والقيمة هي عدد القطع.
+  final Map<String, int> _selectedServices = {};
+
+  // حساب مجموع أسعار جميع الخدمات المختارة.
+  double get _totalPrice {
+    double total = 0;
+
+    for (final service in AppData.services) {
+      final quantity = _selectedServices[service.id] ?? 0;
+      total += service.price * quantity;
+    }
+
+    return total;
+  }
+
+  // حساب العدد الإجمالي للقطع في الطلب.
+  int get _totalQuantity {
+    return _selectedServices.values.fold(0, (sum, quantity) => sum + quantity);
+  }
+
+  // فتح نافذة اختيار العميل من قائمة العملاء المسجلين.
   void _showCustomerSelectionSheet() {
     showModalBottomSheet(
       context: context,
@@ -47,6 +64,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+
               Text(
                 AppStrings.get('اختر العميل', 'Select Customer'),
                 style: TextStyle(
@@ -56,6 +74,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // عرض العملاء في قائمة قابلة للتمرير.
               Expanded(
                 child: AppData.customers.isEmpty
                     ? Center(
@@ -71,6 +91,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                         itemCount: AppData.customers.length,
                         itemBuilder: (context, index) {
                           final customer = AppData.customers[index];
+
                           return ListTile(
                             contentPadding: EdgeInsets.zero,
                             leading: CircleAvatar(
@@ -78,7 +99,9 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                                 alpha: 0.1,
                               ),
                               child: Text(
-                                customer.name.substring(0, 1),
+                                customer.name.isNotEmpty
+                                    ? customer.name.substring(0, 1)
+                                    : '?',
                                 style: TextStyle(
                                   color: AppColors.primaryBlue,
                                   fontWeight: FontWeight.bold,
@@ -96,6 +119,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                               customer.phone,
                               style: TextStyle(color: AppColors.textMuted),
                             ),
+
+                            // عند الضغط على العميل يتم اختياره.
                             onTap: () {
                               setState(() {
                                 _selectedCustomer = customer;
@@ -113,14 +138,105 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
     );
   }
 
+  // إضافة الخدمة أو إلغاء اختيارها عند الضغط على بطاقتها.
+  void _toggleService(LaundryServiceItem service) {
+    setState(() {
+      if (_selectedServices.containsKey(service.id)) {
+        // إذا كانت مختارة نحذفها من الطلب.
+        _selectedServices.remove(service.id);
+      } else {
+        // إذا لم تكن مختارة نضيفها بقطعة واحدة.
+        _selectedServices[service.id] = 1;
+      }
+    });
+  }
+
+  // زيادة أو تقليل كمية خدمة معينة بشكل مستقل.
+  void _changeQuantity(LaundryServiceItem service, int change) {
+    setState(() {
+      final currentQuantity = _selectedServices[service.id] ?? 0;
+      final newQuantity = currentQuantity + change;
+
+      // لا نسمح بأن تصبح الكمية أقل من قطعة واحدة.
+      if (newQuantity >= 1) {
+        _selectedServices[service.id] = newQuantity;
+      }
+    });
+  }
+
+  // إنشاء بطاقة التحكم بكمية كل خدمة مختارة.
+  Widget _buildSelectedServiceQuantity(LaundryServiceItem service) {
+    final quantity = _selectedServices[service.id] ?? 1;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          // اسم الخدمة وسعرها.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.iYERabic ? service.nameAr : service.nameEn,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${service.price} × $quantity = '
+                  '${service.price * quantity} '
+                  '${AppStrings.get('ر.ي', 'YER')}',
+                  style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                ),
+              ],
+            ),
+          ),
+
+          // زر تقليل عدد القطع.
+          IconButton(
+            icon: Icon(Icons.remove_rounded, color: AppColors.textMuted),
+            onPressed: () => _changeQuantity(service, -1),
+          ),
+
+          // عرض الكمية الحالية.
+          Text(
+            '$quantity',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
+          ),
+
+          // زر زيادة عدد القطع.
+          IconButton(
+            icon: Icon(Icons.add_rounded, color: AppColors.textMuted),
+            onPressed: () => _changeQuantity(service, 1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // التحقق من البيانات ثم إنشاء الطلب وحفظه في قائمة الطلبات.
   void _saveOrder() {
-    if (_selectedCustomer == null || _selectedService == null) {
+    if (_selectedCustomer == null || _selectedServices.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             AppStrings.get(
-              'الرجاء اختيار العميل والخدمة',
-              'Please select customer and service',
+              'الرجاء اختيار العميل وخدمة واحدة على الأقل',
+              'Please select a customer and at least one service',
             ),
           ),
           backgroundColor: Colors.redAccent,
@@ -128,30 +244,64 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
       );
       return;
     }
-    final newOrderId = 'ORD-${100 + AppData.orders.length + 1}';
-    final now = DateTime.now();
-    final formattedDate =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} • ${now.hour}:${now.minute.toString().padLeft(2, '0')}';
 
-    setState(() {
-      AppData.orders.insert(
-        0,
-        LaundryOrder(
-          id: newOrderId,
-          customerName: _selectedCustomer!.name,
-          customerPhone: _selectedCustomer!.phone,
-          serviceNameAr: _selectedService!.nameAr,
-          serviceNameEn: _selectedService!.nameEn,
-          quantity: _quantity,
-          totalPrice: _selectedService!.price * _quantity,
-          status: 'new',
-          createdAt: formattedDate,
-          // 👇 الأسطر الجديدة لحل المشكلة
-          pickupTime: 'محدد من الإدارة',
-          deliveryTime: 'محدد من الإدارة',
-        ),
-      );
-    });
+    // استخراج الخدمات التي اختارها المدير.
+    final selectedServices = AppData.services
+        .where((service) => _selectedServices.containsKey(service.id))
+        .toList();
+
+    // تجهيز أسماء الخدمات باللغة العربية.
+    final serviceNamesAr = selectedServices
+        .map((service) {
+          final quantity = _selectedServices[service.id]!;
+          return '${service.nameAr} (x$quantity)';
+        })
+        .join('، ');
+
+    // تجهيز أسماء الخدمات باللغة الإنجليزية.
+    final serviceNamesEn = selectedServices
+        .map((service) {
+          final quantity = _selectedServices[service.id]!;
+          return '${service.nameEn} (x$quantity)';
+        })
+        .join(', ');
+
+    // حساب مجموع أسعار الخدمات المختارة.
+    final totalPrice = _totalPrice;
+
+    // حساب إجمالي عدد القطع.
+    final totalQuantity = _totalQuantity;
+
+    // إنشاء رقم جديد للطلب.
+    final newOrderId = 'ORD-${100 + AppData.orders.length + 1}';
+
+    // تسجيل تاريخ ووقت إنشاء الطلب.
+    final now = DateTime.now();
+
+    final formattedDate =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')} • '
+        '${now.hour}:${now.minute.toString().padLeft(2, '0')}';
+
+    // إنشاء الطلب وإضافته إلى بداية قائمة الطلبات.
+    AppData.orders.insert(
+      0,
+      LaundryOrder(
+        id: newOrderId,
+        customerName: _selectedCustomer!.name,
+        customerPhone: _selectedCustomer!.phone,
+        serviceNameAr: serviceNamesAr,
+        serviceNameEn: serviceNamesEn,
+        quantity: totalQuantity,
+        totalPrice: totalPrice,
+        status: 'new',
+        createdAt: formattedDate,
+        pickupTime: 'محدد من الإدارة',
+        deliveryTime: 'محدد من الإدارة',
+      ),
+    );
+
+    // إظهار رسالة نجاح بعد إنشاء الطلب.
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -164,15 +314,20 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
+
+    // العودة إلى الشاشة السابقة.
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final double totalPrice = (_selectedService?.price ?? 0.0) * _quantity;
+    // تحديث الإجمالي تلقائياً عند اختيار الخدمات وتغيير كمياتها.
+    final double totalPrice = _totalPrice;
 
     return Scaffold(
       backgroundColor: AppColors.background,
+
+      // شريط العنوان العلوي.
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
@@ -187,6 +342,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
           ),
         ),
       ),
+
       body: Column(
         children: [
           Expanded(
@@ -195,6 +351,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // عنوان قسم بيانات العميل.
                   Text(
                     AppStrings.get('بيانات العميل', 'Customer Details'),
                     style: TextStyle(
@@ -204,6 +361,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // بطاقة اختيار العميل.
                   GestureDetector(
                     onTap: _showCustomerSelectionSheet,
                     child: Container(
@@ -240,6 +399,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                             ),
                           ),
                           const SizedBox(width: 16),
+
+                          // عرض اسم العميل ورقم جواله.
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,7 +442,10 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 32),
+
+                  // عنوان قسم اختيار الخدمات.
                   Text(
                     AppStrings.get('نوع الخدمة', 'Service Type'),
                     style: TextStyle(
@@ -291,6 +455,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // عرض جميع الخدمات في بطاقات قابلة للاختيار المتعدد.
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -304,13 +470,14 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                     itemCount: AppData.services.length,
                     itemBuilder: (context, index) {
                       final service = AppData.services[index];
-                      final isSelected = _selectedService?.id == service.id;
+
+                      // معرفة هل الخدمة مختارة أم لا.
+                      final isSelected = _selectedServices.containsKey(
+                        service.id,
+                      );
+
                       return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedService = service;
-                          });
-                        },
+                        onTap: () => _toggleService(service),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           decoration: BoxDecoration(
@@ -338,6 +505,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Row(
                             children: [
+                              // تغيير الأيقونة حسب حالة الاختيار.
                               Icon(
                                 isSelected
                                     ? Icons.check_circle_rounded
@@ -348,6 +516,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                                 size: 24,
                               ),
                               const SizedBox(width: 8),
+
+                              // عرض اسم الخدمة وسعر القطعة الواحدة.
                               Expanded(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -385,75 +555,35 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                         ),
                       );
                     },
-                  ),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        AppStrings.get('عدد القطع', 'Number of Pieces'),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
-                        ),
+                  ), // إظهار قسم الكميات فقط عند اختيار خدمة واحدة على الأقل.
+                  if (_selectedServices.isNotEmpty) ...[
+                    const SizedBox(height: 32),
+
+                    Text(
+                      AppStrings.get(
+                        'عدد القطع لكل خدمة',
+                        'Quantity for Each Service',
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.cardColor,
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color: Colors.grey.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.remove_rounded,
-                                color: AppColors.textMuted,
-                              ),
-                              onPressed: () {
-                                if (_quantity > 1) {
-                                  setState(() {
-                                    _quantity--;
-                                  });
-                                }
-                              },
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              child: Text(
-                                '$_quantity',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.add_rounded,
-                                color: AppColors.textMuted,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _quantity++;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textDark,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // إنشاء عنصر تحكم مستقل لكل خدمة مختارة.
+                    for (final service in AppData.services.where(
+                      (service) => _selectedServices.containsKey(service.id),
+                    ))
+                      _buildSelectedServiceQuantity(service),
+                  ],
                 ],
               ),
             ),
           ),
+
+          // الشريط السفلي الذي يعرض الإجمالي وزر تأكيد الطلب.
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -473,6 +603,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
             child: SafeArea(
               child: Row(
                 children: [
+                  // عرض إجمالي سعر جميع الخدمات.
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -496,6 +627,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                     ],
                   ),
                   const SizedBox(width: 24),
+
+                  // زر حفظ الطلب بعد التأكد من البيانات.
                   Expanded(
                     child: SizedBox(
                       height: 55,

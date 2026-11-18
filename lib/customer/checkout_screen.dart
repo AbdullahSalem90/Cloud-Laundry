@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_data.dart';
-import '../core/main.dart';
-
-String globalSavedAddress = ''; // متغير عام لحفظ العنوان
+import '../core/app_constants.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final Map<String, int> cart;
@@ -29,7 +27,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
-  // 🌟 متغيرات أوقات الاستلام والتسليم (للمغسلة السحابية)
+  // أوقات الاستلام والتسليم
   final List<String> _pickupTimes = [
     'اليوم 04:00 م - 06:00 م',
     'اليوم 06:00 م - 08:00 م',
@@ -84,7 +82,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final formattedDate =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} • ${now.hour}:${now.minute.toString().padLeft(2, '0')}';
 
-    // 🌟 تسجيل الطلب مع أوقات المندوب والحالة الجديدة 'pending_pickup'
+    //  تسجيل الطلب مع أوقات المندوب والحالة الجديدة 'pending_pickup'
     AppData.orders.insert(
       0,
       LaundryOrder(
@@ -95,10 +93,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         serviceNameEn: serviceNames.join(', '),
         quantity: totalPieces,
         totalPrice: widget.totalAmount,
-        status: 'pending_pickup', // ⬅️ الحالة الجديدة: بانتظار استلام المندوب
+        status: 'pending_pickup',
         createdAt: formattedDate,
-        pickupTime: _selectedPickupTime, // ⬅️ وقت الاستلام المختار
-        deliveryTime: _selectedDeliveryTime, // ⬅️ وقت التسليم المختار
+        pickupTime: _selectedPickupTime, // وقت الاستلام
+        deliveryTime: _selectedDeliveryTime, // وقت التسليم
       ),
     );
 

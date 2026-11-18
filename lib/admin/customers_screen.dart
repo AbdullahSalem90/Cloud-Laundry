@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_data.dart';
-import '../core/main.dart';
+import '../core/app_constants.dart';
 
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({super.key});

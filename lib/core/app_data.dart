@@ -1,4 +1,5 @@
 // مسار الملف: lib/core/app_data.dart
+String globalSavedAddress = '';
 
 class LaundryServiceItem {
   final String id;
@@ -29,7 +30,7 @@ class LaundryOrder {
   String status; // 'pending_pickup' (بانتظار الاستلام), 'in_laundry' (في المغسلة), 'out_for_delivery' (جاري التوصيل), 'completed' (مكتمل)
   final String createdAt;
 
-  // 🌟 إضافات المغسلة السحابية (أوقات المندوب)
+  //    (أوقات المندوب)
   final String pickupTime;
   final String deliveryTime;
 
@@ -59,7 +60,6 @@ class Customer {
 class AppData {
   // قائمة الخدمات السحابية
   static List<LaundryServiceItem> services = [
-    // 🌟 الخدمة السحابية الذهبية
     LaundryServiceItem(
       id: 's0',
       nameAr: 'غسيل كيس كامل (Wash & Fold)',

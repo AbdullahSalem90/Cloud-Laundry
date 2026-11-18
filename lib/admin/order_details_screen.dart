@@ -3,18 +3,18 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_data.dart';
-import '../core/main.dart';
+import '../core/app_constants.dart';
 
 class OrderDetailsScreen extends StatefulWidget {
   final LaundryOrder order;
   final bool
-  isAdmin; // ⬅️ إضافة لمعرفة إذا اللي فاتح الشاشة أدمن عشان يقدر يغير الحالة
+  isAdmin; // إضافة لمعرفة إذا اللي فاتح الشاشة أدمن عشان يقدر يغير الحالة
 
   const OrderDetailsScreen({
     super.key,
     required this.order,
     this.isAdmin = true,
-  }); // خليناها true مؤقتاً للتجربة
+  }); 
 
   @override
   State<OrderDetailsScreen> createState() => _OrderDetailsScreenState();
@@ -36,7 +36,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     setState(() {
       currentOrder.status = newStatus;
 
-      // تحديث الحالة في قاعدة البيانات الوهمية
       final index = AppData.orders.indexWhere((o) => o.id == currentOrder.id);
       if (index != -1) {
         AppData.orders[index].status = newStatus;
@@ -97,7 +96,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // 🌟 المتتبع التفاعلي العلوي (Stepper)
+            //  المتتبع التفاعلي العلوي (Stepper)
             Container(
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
               decoration: BoxDecoration(
@@ -145,7 +144,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
             const SizedBox(height: 24),
 
-            // 🌟 الفاتورة الفخمة
+            //  الفاتورة
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(

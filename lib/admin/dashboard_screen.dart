@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_data.dart';
-import '../core/main.dart';
+import '../core/app_constants.dart';
 import 'orders_screen.dart';
 import 'customers_screen.dart';
 import 'analytics_screen.dart';
@@ -86,7 +86,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         bottomNavigationBar: BottomAppBar(
           shape: const CircularNotchedRectangle(),
           notchMargin: 8.0,
-          color: AppColors.cardColor, // لون تفاعلي
+          color: AppColors.cardColor, 
           elevation: 10,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -116,7 +116,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
 
-        // ⬇️ أكوادك القديمة (body و floatingActionButton) تبقى هنا زي ما هي لا تغيرها ⬇️
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
@@ -125,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ).push(MaterialPageRoute(builder: (_) => const AddOrderScreen()));
             setState(() {});
           },
-          backgroundColor: AppColors.navyDark, // ⬅️ لون تفاعلي
+          backgroundColor: AppColors.navyDark, 
           elevation: 5,
           shape: const CircleBorder(),
           child: const Icon(
@@ -202,7 +201,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            // ⬅️ السطر السحري الذي يعكس اللغة في كامل التطبيق فوراً
                             iYERabicNotifier.value = !iYERabicNotifier.value;
                           },
                           child: Text(
@@ -222,7 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.cardColor, // ⬅️ خلفية البطاقة التفاعلية
+                    color: AppColors.cardColor, 
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -598,7 +596,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDark, // ⬅️ نص تفاعلي
+                      color: AppColors.textDark, 
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -623,7 +621,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDark, // ⬅️ نص تفاعلي
+                    color: AppColors.textDark, 
                   ),
                 ),
                 const SizedBox(height: 8),

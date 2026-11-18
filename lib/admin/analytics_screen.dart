@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_data.dart';
-import '../core/main.dart';
+import '../core/app_constants.dart';
 import 'settings_screen.dart';
-import '../login_screen.dart'; // تأكد من مسار الملف حسب ترتيب مجلداتك
+import '../auth/login_screen.dart'; 
 import 'orders_screen.dart';
 
 class AnalyticsScreen extends StatefulWidget {
@@ -43,7 +43,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     int completedOrders = 0;
 
     for (var order in AppData.orders) {
-      if (order.status == 'delivered') {
+      final isCompleted =
+          order.status == 'completed' || order.status == 'delivered';
+
+      if (isCompleted) {
         totalRevenue += order.totalPrice;
         completedOrders++;
       } else {

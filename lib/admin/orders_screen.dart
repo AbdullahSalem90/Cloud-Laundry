@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_data.dart';
-import '../core/main.dart';
+import '../core/app_constants.dart';
 import 'order_details_screen.dart';
 
 List<dynamic> globalOrders = [
@@ -31,7 +31,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ) ||
           order.id.toLowerCase().contains(_searchQuery.toLowerCase());
 
-      // 2. 🌟 فلترة الحالات (تدعم المغسلة السحابية)
       bool matchesStatus = false;
       if (_selectedStatus == 'all') {
         matchesStatus = true;
@@ -220,7 +219,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
     String statusText;
     IconData statusIcon;
 
-    // 🌟 دمج الحالات القديمة مع حالات المغسلة السحابية في الكروت
     switch (order.status) {
       case 'new':
       case 'pending_pickup':

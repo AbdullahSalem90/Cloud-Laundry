@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:laundry_flow/core/main.dart'; // ⬅️ تم تعديل المسار هنا بناءً على طلبك
+import 'package:laundry_flow/main.dart'; // ⬅️ تم تعديل المسار هنا بناءً على طلبك
 
 void main() {
   testWidgets('App starts successfully', (WidgetTester tester) async {
